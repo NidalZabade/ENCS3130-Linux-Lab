@@ -1,0 +1,4 @@
+12345; Ali, Mohammad, Qasem; 3/3/1991; Maried; 3; Male; Ali.qasem@gmail.com, 0599073631, 092991463 ; Administrative; Full-time; Computer engineering ; 9/2018 ; 1200 ; true
+34543; Ahmad, Osama, Ali; 25/6/1991; Single; 3; Male; A.Osama@gmail.com, 0599074454, 092991462 ; Administrative; Part-time; Computer engineering ; 9/2017 ; 1200 ; false
+44345; Majd, Mohammad, Othman; 3/1/1991; Maried; 3; Male; Majd.othman@gmail.com, 0599073630, 092991460 ; Academic; Full-time; Computer engineering ; 9/2018 ; 1600 ; true
+55543; Sama, Osama, Ali; 25/6/1991; Single; 3; Female; Sama.Ali@gmail.com, 0599074456, 092991460 ; Academic; Full-time; Computer engineering ; 9/2017 ; 1700 ; false
