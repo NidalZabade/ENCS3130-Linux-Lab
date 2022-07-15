@@ -1,1 +1,725 @@
+#!/bin/sh
 
+
+#print_specific_semester() function used to Show or print student records for a specific semester by giving the semester number
+
+print_specific_semester(){
+while true
+do
+echo "Enter the semester"
+read semester #read the semester number
+temp2=$( echo "$semester" | cut -c 11 ) #read if the semester is valid
+if [ "$temp2" -eq 1 -o "$temp2" -eq 2 -o "$temp2" -eq 3 ] #make sure if the semester 1 represents the first semester (2 for the second semester, 3 for the 
+#summer semester).
+then
+break
+else
+echo "\nThere is no such semester\n"
+continue
+fi
+done
+while read line; do #wile loop to read line in the file
+temp=$( echo "$line" | cut -f1 -d";" ) 
+if [ "$temp" = "$semester" ]
+then
+echo "\n$line\n"
+return
+fi
+done < "$filename"
+echo "\nThere is no such semester\n"
+return
+}
+
+
+
+#print_overall_avg() function used to Show or print the overall average
+print_overall_avg(){
+echo "\n"
+#variabels
+SUM=0
+HOURS=0
+AVG=0
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+echo "$temp"
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c) #make sure that all grades are valid
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+done < "$filename"
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 0 ]
+then
+continue
+else
+SUM=$((SUM+$(($temp1*$temp2)))) #Total number of grades by hours
+HOURS=$((HOURS+$temp2)) #Total number of hours
+fi
+done < marks_hours
+AVG=$((SUM/HOURS)) #compute the average 
+echo "\nThe Total Points: $SUM\n"
+echo "The Total Hours: $HOURS\n"
+echo "---------------------------------------------------"
+echo "|                                                 |"
+echo "|         The overall average: "$AVG"                 |"
+echo "|                                                 |"
+echo "---------------------------------------------------"
+echo "\n"
+}
+
+
+#print_semester_avg() function used for Show or print the average for every semester
+print_semester_avg(){
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+echo "$temp"
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c) #make sure that all grades are valid
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do #loop to compute the average line by line aka semester by semester
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 0 ]
+then
+continue
+else
+SUM=$((SUM+$(($temp1*$temp2)))) #Total number of grades by hours per semester
+HOURS=$((HOURS+$temp2)) #Total number of hours per semester
+fi
+done < marks_hours
+> marks
+> hours
+> marks_hours
+AVG=$((SUM/HOURS)) #compute the average per semester
+echo "\nThe Total Points: $SUM\n"
+echo "The Total Hours: $HOURS\n"
+echo "---------------------------------------------------"
+echo "|                                                 |"
+echo "|         The overall average: "$AVG"                 |"
+echo "|                                                 |"
+echo "---------------------------------------------------"
+echo "\n"
+SUM=0
+HOURS=0
+done < "$filename"
+}
+
+
+#total_passed_hours() function used for Show or print the total number of passed hours
+total_passed_hours(){
+echo "\n"
+HOURS=0
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+echo "$temp"
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c) #make sure that all grades are valid
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+done < "$filename"
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do #loop to compute the Total Passed Hours line by line aka semester by semester
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 0 -o "$temp1" -eq 55 -o "$temp1" -eq 50 ]
+then
+continue
+else
+HOURS=$((HOURS+$temp2)) #Total number of hours per semester
+fi
+done < marks_hours
+echo "---------------------------------------------------"
+echo "|                                                 |"
+echo "|         Total Passed Hours: "$HOURS"                  |"
+echo "|                                                 |"
+echo "---------------------------------------------------"
+}
+
+
+#percentage_of_passed_hours() function used to Show or print the percentage of total passed hours in relation to total F and FA hours
+percentage_of_passed_hours(){
+echo "\n"
+#variables
+HOURSF=0
+HOURSP=0
+PRE=0
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c) #make sure that all grades are valid
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+done < "$filename"
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 55 -o "$temp1" -eq 50 ]
+then
+HOURSF=$((HOURSF+$temp2)) #compute Total Failed Hours
+elif [ "$temp1" -eq 0 ]
+then
+continue
+else
+HOURSP=$((HOURSP+$temp2)) #compute Total PASSED Hours
+fi
+done < marks_hours
+echo "Failed Hours: "$HOURSF"\n"
+echo "Passed Hours: "$HOURSP"\n"
+PERF=$(($(($HOURSF*100))/$HOURSP)) #compute Percentage of Failed Hours
+echo "---------------------------------------------------"
+echo "|                                                 |"
+echo "|         Percentage of Failed Hours: "$PERF"%         |"
+echo "|                                                 |"
+echo "---------------------------------------------------"
+
+PERP=$((100-$(($(($HOURSF*100))/$HOURSP)))) #compute Percentage of PASSED Hours
+echo "---------------------------------------------------"
+echo "|                                                 |"
+echo "|         Percentage of PASSED Hours: "$PERP"%         |"
+echo "|                                                 |"
+echo "---------------------------------------------------"
+echo "\n"
+}
+
+
+#hours_taken() function used to Show or print the total number of hours taken for every semester.
+hours_taken(){
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+echo "\n"$temp""
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c) #make sure that all grades are valid
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 0 ]
+then
+continue
+else
+HOURS=$((HOURS+$temp2)) # compute total hours taken
+fi
+done < marks_hours
+> marks
+> hours
+> marks_hours
+echo "\n[Number of Hours Taken: "$HOURS"]\n"
+SUM=0
+HOURS=0
+done < "$filename"
+ }
+
+
+#semester_courses() function used to Show or print the total number of courses taken per semester.
+semester_courses(){
+echo "\n"
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+echo "$temp"
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," ) #make sure that all grades are valid
+l=$(echo "$val" | grep [^0-9] | wc -c)
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 0 ]
+then
+continue
+else
+COUNT=$(($COUNT+1)) # compute the total number of taken courses per semester
+fi
+done < marks_hours
+> marks
+> hours
+> marks_hours
+echo "\n[Total Courses in the semester: "$COUNT"]\n"
+COUNT=0
+done < "$filename"
+}
+
+#total_courses() function used to Show or print the total number of courses taken
+total_courses(){
+echo "\n"
+#variables
+COUNT=0
+#creating files for the operation
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do #read the file
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+for val in $temp; do
+val=$( echo "$val" | cut -f1 -d"," )  #make sure that all grades and courses are valid
+l=$(echo "$val" | grep [^0-9] | wc -c)
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ] #FA (Fail Absent counted as 50).
+then
+val=50
+elif [ "$val" = "F" ] #F (Fail and counted as 55)
+then
+val=55
+elif [ "$val" = "I" ] #I (incomplete)
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+done < "$filename"
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp1" -eq 0 ]
+then
+continue
+else
+COUNT=$(($COUNT+1))
+fi
+done < marks_hours
+echo "\n[Total Courses: "$COUNT"]\n"
+}
+
+#num_of_labs() function used to Show or print the total number of labs taken.
+num_of_labs(){
+echo "\n"
+#variable
+COUNT=0
+#creating files
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+for val in $temp; do 
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c)
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+if [ "$val" = "FA" ]
+then
+val=50
+elif [ "$val" = "F" ]
+then
+val=55
+elif [ "$val" = "I" ]
+then
+val=0
+fi
+echo "$val" >> marks
+else
+echo "$val" | cut -c 6 >> hours
+fi    
+done
+done < "$filename"
+touch marks_hours
+paste marks hours > marks_hours
+while read line2; do
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+if [ "$temp2" -ne 1 ]
+then
+continue
+else
+COUNT=$(($COUNT+1)) #compute the number of labes
+fi
+done < marks_hours
+echo "\n[Total Number of Labs: "$COUNT"]\n"
+}
+
+
+
+#record_insertion() function used for Insert the new semester record
+record_insertion(){
+
+while true; do
+echo "Enter new semester in form of:-"
+echo "Semester number [ xxxx-yyyy/(1 or 2 or 3); ]"
+read sem
+
+
+temp1=$( echo "$sem" | cut -c 5 ) # make sure the the giving semester is valid has (-) between the years
+temp2=$( echo "$sem" | cut -c 10 ) #make sure the the giving semester is valid has (/) after the years
+temp3=$( echo "$sem" | cut -c 12 ) #make sure the the giving semester is valid has (;) after the semester
+if [ "$temp1" = "-" -a "$temp2" = "/" -a "$temp3" = ";" ] #make sure the the giving semester is valid
+then
+echo "Valid input"
+break 1
+else
+echo "Invalid Input"
+continue
+fi
+done
+
+#elsetr5f :legend
+
+HOURS=0
+while true; do
+
+echo "Enter the new course [course marks] ex: ENCS3130 85 "
+read cour_mar
+temp1=$( echo "$cour_mar" | cut -c1-4   ) # ENEE or ENCS the first 4 char 
+temp2=$( echo "$cour_mar" | cut -c5-8   ) # the 4 numbers next to the cource name
+temp3=$( echo "$cour_mar" | cut -c6    ) # the number of hours
+temp4=$( echo "$cour_mar" | cut -c10-11 ) # the gd
+
+
+if [ \( "$temp1" = "ENEE" -o "$temp1" = "ENCS" \) -a \( "$temp2" -ge 2000 -a "$temp2" -le 5999 \) ] #make sure the the giving grade is valid
+then 
+if [ "$temp4" -eq 50 ]
+then
+temp4=FA
+elif [ "$temp4" -eq 55 ] 
+then
+temp4=F
+elif [ "$temp4" = 0 ]
+then
+temp4=I
+fi
+
+echo "Valid Course"
+HOURS=$(($HOURS+$temp3)) #total hours inserted
+echo "You have Assigned this many hours:"
+echo $HOURS
+
+echo "Do you want to enter another course? (y/n)"
+read input
+else
+echo "Invalid Course"
+continue
+fi
+
+if [ "$input" = y -a "$HOURS" -le 18 ] #insert anothe course if y pressed
+then
+sem="${sem} ${temp1}${temp2} ${temp4}," #concat the valid gd to the semester 
+continue 
+elif [ "$input" = n -a "$HOURS" -lt 12 ] #end of the insersion but if the total hours less than 12 print he hours you have are less than 12 therefore you have to add more hours
+then
+echo "The hours you have are less than 12 therefore you have to add more hours:"
+sem="${sem} ${temp1}${temp2} ${temp4}," 
+continue
+elif [ "$input" = n -a "$HOURS" -ge 12 ] #concat the last inserted course and append the semester to the file
+then
+sem="${sem} ${temp1}${temp2} ${temp4}" 
+echo "$sem" >> "$filename"
+break
+elif [ "$HOURS" -gt 18 ] #if the number of hours greater than 18
+then
+sem="${sem} ${temp1}${temp2} ${temp4}" 
+echo "$sem" >> "$filename"
+break
+elif [ "$input" != y -o "$input" = n ] #make sure that the answer should be y for yes or n fo no
+then
+echo "Invalid answer"
+break
+fi
+done
+}
+
+
+#change_grade() function used to Change in course grade by giving the course name
+change_grade(){
+echo "Enter the course id that you want to change"
+flag=0
+read chg
+touch marks
+touch hours
+> marks
+> hours
+> marks_hours
+while read line; do
+temp=$( echo "$line" | sed -n -e 's/^.*; //p' ) #cut the lines just to show the courses and gardes
+echo "$temp"
+for val in $temp; do #read the courses and the grades and saves echa in file
+val=$( echo "$val" | cut -f1 -d"," )
+l=$(echo "$val" | grep [^0-9] | wc -c)
+
+if [ "$l" -ge 0 -a "$l" -le 3 ]
+then
+echo "$val" >> marks
+else
+echo "$val" >> hours
+fi    
+
+done
+done < "$filename"
+touch marks_hours
+paste hours marks > marks_hours
+while read line2; do #see if the entered cource is exist or not
+temp1=$( echo "$line2" | cut -f1 )
+temp2=$( echo "$line2" | cut -f2 )
+
+if [ "$temp1" = "$chg" ]
+then
+echo "$line2"
+flag=1
+break
+else
+continue
+fi
+done < marks_hours
+
+if [ "$flag" -eq 1 ]
+then
+echo "Enter new grade"
+read gd
+echo "$gd"
+
+n=$(echo "$grade" | grep [^0-9] | wc -c)
+
+if [ "$n" -ge 0 -a "$n" -le 3 ]
+then
+echo "Do you to change the grade? (y/n)"
+read ans
+if [ "$ans" = "y" ]
+then
+sed -e "s/$chg [0123456789F][0123456789A]/$chg $gd/g" "$filename" > tempfile # the changing operation fot the grade
+cat tempfile > "$filename"
+elif [ "$ans" = "n" ]
+then
+return
+
+else
+echo "Invalid answer"
+fi
+
+else
+continue
+fi
+else
+echo "Invalid input"
+fi
+}
+
+
+
+
+
+
+echo Enter File Name
+read filename
+if [ ! -e "$filename" ] #see if the file exist or not
+then
+	echo "There is no such File"
+	exit 0
+fi
+
+while true
+do
+#the list we has the operations description on it 
+
+echo "1. print student records (all semesters)."
+echo "2. print student records for a specific semester."
+echo "3. print the overall average."
+echo "4. print the average for every semester."
+echo "5. print the total number of passed hours."
+echo "6. print the percentage of total passed hours in relation to total F and FA hours."
+echo "7. print the total number of hours taken for every semester."
+echo "8. print the total number of courses taken."
+echo "9. print the total number of labs taken."
+echo "10. Insert the new semester record."
+echo "11. Change in course grade."
+echo "0. Exit Program"
+
+read -p 'Enter your command: ' command
+case "$command" in
+1) 
+#case 1 to print student records (all semesters).
+echo "\n"
+cat "$filename"
+echo "\n";;
+2)
+#case 2 to print student records for a specific semester. by calling print_specific_semester function
+print_specific_semester;;
+3)
+#case 3 to print the overall average. by calling print_overall_avg function
+print_overall_avg;;
+4)
+#case 4 to print the average for every semester. by calling print_semester_avg function
+print_semester_avg;;
+5)
+#case 5 to print the total number of passed hours. by calling total_passed_hours function
+total_passed_hours;;
+6)
+#case 6 to Show or print the percentage of total passed hours in relation to total F and FA hours. by calling percentage_of_passed_hours function
+percentage_of_passed_hours;;
+7)
+#case 7 to print the total number of hours taken for every semester. by calling hours_taken function
+hours_taken;;
+8)
+#case 8 to print the total number of courses taken. by calling semester_courses total_courses functions
+semester_courses
+total_courses
+;;
+9)
+#case 9 to print the total number of labs taken. by calling num_of_labs functions
+num_of_labs;;
+10)
+#case 10 to Insert the new semester record. by calling record_insertion function
+record_insertion;;
+11)
+#case 11 Change in course grade. by calling change_grade function
+change_grade;;
+0)
+echo "Thank you for using" #case 0 (exit case)
+exit 0;;
+*)
+echo "\ninvalid input\n\n" #defult case for any invalid commands
+esac
+done
