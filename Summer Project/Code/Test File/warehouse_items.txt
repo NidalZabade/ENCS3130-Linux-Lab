@@ -1,0 +1,4 @@
+0129;Orange Juice Bottles;20/1/2023;1.5;2;1200
+0122;Apple Juice Bottles;12/8/2023;1.5;2;1200
+0123;Grape Juice Bottles;22/9/2024;1.5;2;1200
+0124;Mango Juice Bottles;21/11/2022;1.5;2;1200
